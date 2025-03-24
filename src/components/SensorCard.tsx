@@ -28,39 +28,39 @@ export const sensorInfoData: Record<SensorType, SensorInfo> = {
   mq137: {
     id: 'mq137',
     name: 'Ammonia',
-    description: 'Measures air quality including ammonia, CO2, and other gases',
+    description: 'Measures ammonia concentrations (NH3)',
     unit: 'ppm',
     icon: 'cloud',
     thresholds: {
-      good: 3.0,
-      warning: 4.5,
-      danger: 6.0,
+      good: 25,     // Good: 0–2.5 ppm
+      warning: 50,  // Warning: 2.6–5.0 ppm
+      danger: 100,   // Danger: >5.0 ppm
     },
     color: 'air',
   },
   mq4: {
     id: 'mq4',
     name: 'Methane',
-    description: 'Measures methane and natural gas concentrations',
+    description: 'Measures methane and natural gas concentrations (CH4)',
     unit: 'ppm',
     icon: 'flame',
     thresholds: {
-      good: 1.5,
-      warning: 2.5,
-      danger: 3.5,
+      good: 1000,     // Good: 0–1.0 ppm
+      warning: 5000,  // Warning: 1.1–2.0 ppm
+      danger: 10000,   // Danger: >2.0 ppm
     },
     color: 'methane',
   },
   mq7: {
     id: 'mq7',
     name: 'Carbon Monoxide',
-    description: 'Measures carbon monoxide (CO) concentrations',
+    description: 'Measures carbon monoxide concentrations (CO)',
     unit: 'ppm',
     icon: 'wind',
     thresholds: {
-      good: 2.0,
-      warning: 3.0,
-      danger: 4.0,
+      good: 35,     // Good: 0–1.5 ppm
+      warning: 99,  // Warning: 1.6–2.5 ppm
+      danger: 400,   // Danger: >2.5 ppm
     },
     color: 'carbon',
   },
