@@ -61,12 +61,12 @@ const SensorChart: React.FC<SensorChartProps> = ({
 
   const minValue = useMemo(() => {
     const values = chartData.map((d) => d.value);
-    return values.length > 0 ? Math.floor(Math.min(...values) * 0.9) : 0;
+    return values.length > 0 ? Math.floor(Math.min(...values) * 0.99) : 0;
   }, [chartData]);
 
   const maxValue = useMemo(() => {
     const values = chartData.map((d) => d.value);
-    return values.length > 0 ? Math.ceil(Math.max(...values) * 1.1) : 10;
+    return values.length > 0 ? Math.ceil(Math.max(...values) * 1.05) : 10;
   }, [chartData]);
 
   const getGradientColors = () => {
