@@ -44,33 +44,44 @@ const SensorChart: React.FC<SensorChartProps> = ({
   const chartData = useMemo(() => {
     return data.map(item => ({
       timestamp: item.timestamp || new Date().toISOString(),
-      value: item[sensorType]
+      value: item[`${sensorType}_ppm`]
     }));
   }, [data, sensorType]);
   
   // Calculate min and max values for better Y axis scaling
-  const minValue = useMemo(() => 
-    Math.floor(Math.min(...chartData.map(d => d.value)) * 0.9),
-    [chartData]
-  );
+  const minValue = useMemo(() => {
+    const values = chartData.map(d => d.value);
+    return values.length > 0 ? Math.floor(Math.min(...values) * 0.9) : 0;
+  }, [chartData]);
   
-  const maxValue = useMemo(() => 
-    Math.ceil(Math.max(...chartData.map(d => d.value)) * 1.1),
-    [chartData]
-  );
+  const maxValue = useMemo(() => {
+    const values = chartData.map(d => d.value);
+    return values.length > 0 ? Math.ceil(Math.max(...values) * 1.1) : 10;
+  }, [chartData]);
 
   // Get gradient colors based on sensor type
   const getGradientColors = () => {
-    if (sensorType === 'mq135') {
-      return {
-        stroke: '#3B82F6', // blue 
-        fill: ['#EFF6FF', '#DBEAFE', '#BFDBFE', '#93C5FD']
-      };
-    } else {
-      return {
-        stroke: '#8B5CF6', // purple
-        fill: ['#F5F3FF', '#EDE9FE', '#DDD6FE', '#C4B5FD']
-      };
+    switch(sensorType) {
+      case 'mq137':
+        return {
+          stroke: '#3B82F6', // blue 
+          fill: ['#EFF6FF', '#DBEAFE', '#BFDBFE', '#93C5FD']
+        };
+      case 'mq4':
+        return {
+          stroke: '#8B5CF6', // purple
+          fill: ['#F5F3FF', '#EDE9FE', '#DDD6FE', '#C4B5FD']
+        };
+      case 'mq7':
+        return {
+          stroke: '#EC4899', // pink
+          fill: ['#FCE7F3', '#FBCFE8', '#F9A8D4', '#F472B6']
+        };
+      default:
+        return {
+          stroke: '#3B82F6',
+          fill: ['#EFF6FF', '#DBEAFE', '#BFDBFE', '#93C5FD']
+        };
     }
   };
   

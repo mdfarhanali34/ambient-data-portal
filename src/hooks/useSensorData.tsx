@@ -4,7 +4,7 @@ import { SensorData, SensorState } from '@/lib/types';
 import { toast } from 'sonner';
 
 // API configuration
-const API_URL = 'http://localhost:3000'; // Update this with your actual API URL
+const API_URL = 'http://6a78-131-104-23-252.ngrok-free.app'; // Using the provided ngrok URL
 const POLLING_INTERVAL = 5000; // in ms - fetch data every 5 seconds
 
 /**
@@ -20,6 +20,7 @@ export function useSensorData(): SensorState & {
       const response = await fetch(`${API_URL}/raw`, {
         method: 'GET',
         headers: {
+          'accept': 'application/json',
           'Content-Type': 'application/json',
         },
       });
@@ -52,18 +53,21 @@ export function useSensorData(): SensorState & {
     queryFn: fetchSensorData,
     refetchInterval: POLLING_INTERVAL,
     retry: 3,
-    onSuccess: (data) => {
-      // Add new data to historical data, keeping only recent history
-      setHistoricalData(prev => {
-        const newData = [...prev, data];
-        // Keep only the last 20 data points
-        return newData.slice(-20);
-      });
-    },
-    onError: (error) => {
-      toast.error('Failed to fetch sensor data', {
-        description: error instanceof Error ? error.message : 'Unknown error',
-      });
+    onSettled: (data, error) => {
+      if (data) {
+        // Add new data to historical data, keeping only recent history
+        setHistoricalData(prev => {
+          const newData = [...prev, data];
+          // Keep only the last 20 data points
+          return newData.slice(-20);
+        });
+      }
+      
+      if (error) {
+        toast.error('Failed to fetch sensor data', {
+          description: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
     },
   });
 
@@ -93,12 +97,14 @@ export function useMockSensorData(): SensorState & {
   // Generate mock data
   const generateMockData = useCallback((): SensorData => {
     // Simulate realistic fluctuations around base values
-    const mq135 = Math.floor(110 + Math.random() * 10); // Air quality around 110-120
-    const mq4 = Math.floor(225 + Math.random() * 10); // Methane around 225-235
+    const mq137_ppm = parseFloat((4.5 + Math.random() * 0.5).toFixed(2)); // Around 4.5-5.0
+    const mq4_ppm = parseFloat((1.8 + Math.random() * 0.3).toFixed(2));   // Around 1.8-2.1
+    const mq7_ppm = parseFloat((2.8 + Math.random() * 0.3).toFixed(2));   // Around 2.8-3.1
     
     return {
-      mq135,
-      mq4,
+      mq137_ppm,
+      mq4_ppm,
+      mq7_ppm,
       timestamp: new Date().toISOString(),
     };
   }, []);
@@ -126,8 +132,9 @@ export function useMockSensorData(): SensorState & {
             date.setMinutes(date.getMinutes() - (15 - i));
             
             return {
-              mq135: Math.floor(110 + Math.random() * 10),
-              mq4: Math.floor(225 + Math.random() * 10),
+              mq137_ppm: parseFloat((4.5 + Math.random() * 0.5).toFixed(2)),
+              mq4_ppm: parseFloat((1.8 + Math.random() * 0.3).toFixed(2)),
+              mq7_ppm: parseFloat((2.8 + Math.random() * 0.3).toFixed(2)),
               timestamp: date.toISOString(),
             };
           });

@@ -4,7 +4,8 @@ import {
   Gauge, 
   CloudFog, 
   Flame, 
-  Info 
+  Info,
+  Wind
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
@@ -24,16 +25,16 @@ interface SensorCardProps {
 
 // Sensor info data
 export const sensorInfoData: Record<SensorType, SensorInfo> = {
-  mq135: {
-    id: 'mq135',
+  mq137: {
+    id: 'mq137',
     name: 'Air Quality',
-    description: 'Measures air quality including CO2, smoke, and other gases',
+    description: 'Measures air quality including ammonia, CO2, and other gases',
     unit: 'ppm',
     icon: 'cloud',
     thresholds: {
-      good: 100,
-      warning: 150,
-      danger: 200,
+      good: 3.0,
+      warning: 4.5,
+      danger: 6.0,
     },
     color: 'air',
   },
@@ -44,11 +45,24 @@ export const sensorInfoData: Record<SensorType, SensorInfo> = {
     unit: 'ppm',
     icon: 'flame',
     thresholds: {
-      good: 200,
-      warning: 250,
-      danger: 300,
+      good: 1.5,
+      warning: 2.5,
+      danger: 3.5,
     },
     color: 'methane',
+  },
+  mq7: {
+    id: 'mq7',
+    name: 'Carbon Monoxide',
+    description: 'Measures carbon monoxide (CO) concentrations',
+    unit: 'ppm',
+    icon: 'wind',
+    thresholds: {
+      good: 2.0,
+      warning: 3.0,
+      danger: 4.0,
+    },
+    color: 'carbon',
   },
 };
 
@@ -63,6 +77,8 @@ const SensorCard: React.FC<SensorCardProps> = ({ value, sensor, className }) => 
         return <CloudFog className={`h-6 w-6 text-${sensor.color}`} />;
       case 'flame':
         return <Flame className={`h-6 w-6 text-${sensor.color}`} />;
+      case 'wind':
+        return <Wind className={`h-6 w-6 text-${sensor.color}`} />;
       default:
         return <Gauge className={`h-6 w-6 text-${sensor.color}`} />;
     }

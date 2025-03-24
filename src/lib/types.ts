@@ -1,9 +1,10 @@
 
-export type SensorType = 'mq135' | 'mq4';
+export type SensorType = 'mq137' | 'mq4' | 'mq7';
 
 export interface SensorData {
-  mq135: number;
-  mq4: number;
+  mq137_ppm: number;
+  mq4_ppm: number;
+  mq7_ppm: number;
   timestamp?: string;
 }
 

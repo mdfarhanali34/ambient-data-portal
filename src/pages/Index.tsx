@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useMockSensorData } from '@/hooks/useSensorData';
+import { useSensorData } from '@/hooks/useSensorData';
 import Header from '@/components/Header';
 import SensorCard, { sensorInfoData } from '@/components/SensorCard';
 import SensorChart from '@/components/SensorChart';
@@ -11,14 +11,14 @@ import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
 
 const Dashboard = () => {
-  // Use the mock data hook for now - replace with real data in production
+  // Use the real data hook instead of mock data
   const { 
     currentData, 
     historicalData, 
     isLoading, 
     error, 
     refreshData 
-  } = useMockSensorData();
+  } = useSensorData();
   
   const [isRefreshing, setIsRefreshing] = useState(false);
   
@@ -82,8 +82,8 @@ const Dashboard = () => {
         
         {/* Loading state */}
         {isLoading && !error && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
-            {[1, 2].map((i) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-6">
+            {[1, 2, 3].map((i) => (
               <div 
                 key={i}
                 className="rounded-xl border h-[200px] bg-card/50 animate-pulse"
@@ -118,38 +118,48 @@ const Dashboard = () => {
         {!isLoading && !error && currentData && (
           <>
             <div 
-              className={`grid grid-cols-1 md:grid-cols-2 gap-6 my-6 transition-opacity duration-500 ${
+              className={`grid grid-cols-1 md:grid-cols-3 gap-6 my-6 transition-opacity duration-500 ${
                 isVisible ? 'opacity-100' : 'opacity-0'
               }`}
             >
               <SensorCard 
-                value={currentData.mq135} 
-                sensor={sensorInfoData.mq135} 
+                value={currentData.mq137_ppm} 
+                sensor={sensorInfoData.mq137} 
                 className="stagger-1"
               />
               <SensorCard 
-                value={currentData.mq4} 
+                value={currentData.mq4_ppm} 
                 sensor={sensorInfoData.mq4} 
                 className="stagger-2"
+              />
+              <SensorCard 
+                value={currentData.mq7_ppm} 
+                sensor={sensorInfoData.mq7} 
+                className="stagger-3"
               />
             </div>
             
             {/* Charts */}
             {historicalData.length > 0 && (
               <div 
-                className={`grid grid-cols-1 md:grid-cols-2 gap-6 my-6 transition-opacity duration-500 ${
+                className={`grid grid-cols-1 md:grid-cols-3 gap-6 my-6 transition-opacity duration-500 ${
                   isVisible ? 'opacity-100' : 'opacity-0'
                 }`}
               >
                 <SensorChart 
                   data={historicalData} 
-                  sensorType="mq135" 
-                  className="stagger-3" 
+                  sensorType="mq137" 
+                  className="stagger-4" 
                 />
                 <SensorChart 
                   data={historicalData} 
                   sensorType="mq4" 
-                  className="stagger-4" 
+                  className="stagger-5" 
+                />
+                <SensorChart 
+                  data={historicalData} 
+                  sensorType="mq7" 
+                  className="stagger-6" 
                 />
               </div>
             )}
