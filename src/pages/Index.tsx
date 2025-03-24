@@ -49,7 +49,7 @@ const Dashboard = () => {
     <div className="min-h-screen w-full bg-background text-foreground px-4 py-8 md:px-8 lg:px-12 transition-all duration-500">
       <div className="max-w-6xl mx-auto">
         <Header 
-          title="Ammonia Monitor"
+          title="Air Quality Dashboard"
           subtitle="Real-time sensor data from ESP01"
           lastUpdated={lastUpdated}
           onRefresh={handleRefresh}
