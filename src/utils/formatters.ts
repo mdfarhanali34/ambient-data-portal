@@ -43,7 +43,7 @@ export const getStatusClasses = (
   status: 'good' | 'warning' | 'danger',
   sensorType: SensorType
 ): string => {
-  const baseColor = sensorType === 'mq135' ? 'air' : 'methane';
+  const baseColor = sensorType === 'mq137' ? 'air' : 'methane';
   
   switch (status) {
     case 'good':

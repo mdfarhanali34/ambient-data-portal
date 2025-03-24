@@ -53,21 +53,18 @@ export function useSensorData(): SensorState & {
     queryFn: fetchSensorData,
     refetchInterval: POLLING_INTERVAL,
     retry: 3,
-    onSettled: (data, error) => {
-      if (data) {
-        // Add new data to historical data, keeping only recent history
-        setHistoricalData(prev => {
-          const newData = [...prev, data];
-          // Keep only the last 20 data points
-          return newData.slice(-20);
-        });
-      }
-      
-      if (error) {
-        toast.error('Failed to fetch sensor data', {
-          description: error instanceof Error ? error.message : 'Unknown error',
-        });
-      }
+    onSuccess: (data) => {
+      // Add new data to historical data, keeping only recent history
+      setHistoricalData(prev => {
+        const newData = [...prev, data];
+        // Keep only the last 20 data points
+        return newData.slice(-20);
+      });
+    },
+    onError: (error) => {
+      toast.error('Failed to fetch sensor data', {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
     },
   });
 
@@ -94,17 +91,12 @@ export function useMockSensorData(): SensorState & {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Generate mock data
+  // Generate mock data - Now just using fixed values instead of random
   const generateMockData = useCallback((): SensorData => {
-    // Simulate realistic fluctuations around base values
-    const mq137_ppm = parseFloat((4.5 + Math.random() * 0.5).toFixed(2)); // Around 4.5-5.0
-    const mq4_ppm = parseFloat((1.8 + Math.random() * 0.3).toFixed(2));   // Around 1.8-2.1
-    const mq7_ppm = parseFloat((2.8 + Math.random() * 0.3).toFixed(2));   // Around 2.8-3.1
-    
     return {
-      mq137_ppm,
-      mq4_ppm,
-      mq7_ppm,
+      mq137_ppm: 4.77,
+      mq4_ppm: 1.92,
+      mq7_ppm: 2.92,
       timestamp: new Date().toISOString(),
     };
   }, []);
@@ -124,7 +116,7 @@ export function useMockSensorData(): SensorState & {
     // Initial load simulation
     setTimeout(() => {
       try {
-        // Generate initial historical data
+        // Generate initial historical data with fixed values instead of random
         const initialHistory: SensorData[] = Array(15)
           .fill(null)
           .map((_, i) => {
@@ -132,9 +124,9 @@ export function useMockSensorData(): SensorState & {
             date.setMinutes(date.getMinutes() - (15 - i));
             
             return {
-              mq137_ppm: parseFloat((4.5 + Math.random() * 0.5).toFixed(2)),
-              mq4_ppm: parseFloat((1.8 + Math.random() * 0.3).toFixed(2)),
-              mq7_ppm: parseFloat((2.8 + Math.random() * 0.3).toFixed(2)),
+              mq137_ppm: 4.77,
+              mq4_ppm: 1.92,
+              mq7_ppm: 2.92,
               timestamp: date.toISOString(),
             };
           });
