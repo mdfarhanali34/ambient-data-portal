@@ -27,7 +27,7 @@ interface SensorCardProps {
 export const sensorInfoData: Record<SensorType, SensorInfo> = {
   mq137: {
     id: 'mq137',
-    name: 'Air Quality',
+    name: 'Ammonia',
     description: 'Measures air quality including ammonia, CO2, and other gases',
     unit: 'ppm',
     icon: 'cloud',

@@ -1,15 +1,25 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { SensorData, SensorState } from '@/lib/types';
+import axios from 'axios';
 import { toast } from 'sonner';
 
-// API configuration
-const API_URL = 'http://6a78-131-104-23-252.ngrok-free.app'; // Using the provided ngrok URL
-const POLLING_INTERVAL = 5000; // in ms - fetch data every 5 seconds
+export interface SensorData {
+  mq4_ppm: number;
+  mq7_ppm: number;
+  mq137_ppm: number;
+  timestamp: string;
+}
 
-/**
- * Hook to fetch and manage sensor data
- */
+export interface SensorState {
+  isLoading: boolean;
+  error: Error | null;
+  currentData: SensorData | null;
+  historicalData: SensorData[];
+}
+
+const API_URL = 'http://6a78-131-104-23-252.ngrok-free.app'; // Update to new ngrok URL if changed
+const POLLING_INTERVAL = 5000;
+
 export function useSensorData(): SensorState & {
   refreshData: () => void;
 } {
@@ -17,32 +27,36 @@ export function useSensorData(): SensorState & {
   
   const fetchSensorData = async (): Promise<SensorData> => {
     try {
-      const response = await fetch(`${API_URL}/raw`, {
-        method: 'GET',
+      const response = await axios.get(`${API_URL}/raw`, {
         headers: {
-          'accept': 'application/json',
+          'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'User-Agent': 'curl/7.68.0',
         },
       });
-      
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      // Add timestamp if not provided by API
-      if (!data.timestamp) {
-        data.timestamp = new Date().toISOString();
-      }
-      
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      console.log('Response data:', response.data);
+
+      const data: SensorData = response.data;
       return data;
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Axios error details:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          headers: error.response?.headers,
+        });
+        const message = error.response?.data || error.message;
+        throw new Error(`Failed to fetch sensor data: ${message}`);
+      }
       console.error('Error fetching sensor data:', error);
       throw new Error('Failed to fetch sensor data. Check server connection.');
     }
   };
 
-  // Use react-query for data fetching with polling
   const { 
     data: currentData, 
     isLoading, 
@@ -54,10 +68,8 @@ export function useSensorData(): SensorState & {
     refetchInterval: POLLING_INTERVAL,
     retry: 3,
     onSuccess: (data) => {
-      // Add new data to historical data, keeping only recent history
       setHistoricalData(prev => {
         const newData = [...prev, data];
-        // Keep only the last 20 data points
         return newData.slice(-20);
       });
     },
@@ -68,7 +80,6 @@ export function useSensorData(): SensorState & {
     },
   });
 
-  // Function to manually refresh data
   const refreshData = useCallback(() => {
     refetch();
   }, [refetch]);
@@ -77,79 +88,6 @@ export function useSensorData(): SensorState & {
     isLoading,
     error: error as Error | null,
     currentData: currentData || null,
-    historicalData,
-    refreshData,
-  };
-}
-
-// Mock function for development/demo purposes
-export function useMockSensorData(): SensorState & {
-  refreshData: () => void;
-} {
-  const [currentData, setCurrentData] = useState<SensorData | null>(null);
-  const [historicalData, setHistoricalData] = useState<SensorData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  // Generate mock data - Now just using fixed values instead of random
-  const generateMockData = useCallback((): SensorData => {
-    return {
-      mq137_ppm: 4.77,
-      mq4_ppm: 1.92,
-      mq7_ppm: 2.92,
-      timestamp: new Date().toISOString(),
-    };
-  }, []);
-
-  // Refresh data manually
-  const refreshData = useCallback(() => {
-    const newData = generateMockData();
-    setCurrentData(newData);
-    setHistoricalData(prev => {
-      const newHistory = [...prev, newData];
-      return newHistory.slice(-20); // keep last 20 entries
-    });
-  }, [generateMockData]);
-
-  // Initialize mock data
-  useEffect(() => {
-    // Initial load simulation
-    setTimeout(() => {
-      try {
-        // Generate initial historical data with fixed values instead of random
-        const initialHistory: SensorData[] = Array(15)
-          .fill(null)
-          .map((_, i) => {
-            const date = new Date();
-            date.setMinutes(date.getMinutes() - (15 - i));
-            
-            return {
-              mq137_ppm: 4.77,
-              mq4_ppm: 1.92,
-              mq7_ppm: 2.92,
-              timestamp: date.toISOString(),
-            };
-          });
-
-        const latest = generateMockData();
-        setHistoricalData([...initialHistory, latest]);
-        setCurrentData(latest);
-        setIsLoading(false);
-      } catch (e) {
-        setError(e instanceof Error ? e : new Error('Unknown error'));
-        setIsLoading(false);
-      }
-    }, 1000);
-
-    // Set up polling interval
-    const interval = setInterval(refreshData, POLLING_INTERVAL);
-    return () => clearInterval(interval);
-  }, [generateMockData, refreshData]);
-
-  return {
-    isLoading,
-    error,
-    currentData,
     historicalData,
     refreshData,
   };
