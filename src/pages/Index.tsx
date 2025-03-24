@@ -141,25 +141,21 @@ const Dashboard = () => {
             
             {/* Charts */}
             {historicalData.length > 0 && (
-              <div 
-                className={`grid grid-cols-1 md:grid-cols-3 gap-6 my-6 transition-opacity duration-500 ${
-                  isVisible ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
+              <div className="space-y-6 my-6">
                 <SensorChart 
                   data={historicalData} 
                   sensorType="mq137" 
-                  className="stagger-4" 
+                  className="w-full stagger-4" 
                 />
                 <SensorChart 
                   data={historicalData} 
                   sensorType="mq4" 
-                  className="stagger-5" 
+                  className="w-full stagger-5" 
                 />
                 <SensorChart 
                   data={historicalData} 
                   sensorType="mq7" 
-                  className="stagger-6" 
+                  className="w-full stagger-6" 
                 />
               </div>
             )}

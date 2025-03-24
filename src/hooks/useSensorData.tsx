@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -17,72 +17,54 @@ export interface SensorState {
   historicalData: SensorData[];
 }
 
-const API_URL = 'http://6a78-131-104-23-252.ngrok-free.app'; // Update to new ngrok URL if changed
+const API_URL = 'http://6a78-131-104-23-252.ngrok-free.app'; // Ensure this URL is current
 const POLLING_INTERVAL = 5000;
 
 export function useSensorData(): SensorState & {
   refreshData: () => void;
 } {
   const [historicalData, setHistoricalData] = useState<SensorData[]>([]);
-  
+
   const fetchSensorData = async (): Promise<SensorData> => {
-    try {
-      const response = await axios.get(`${API_URL}/raw`, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'User-Agent': 'curl/7.68.0',
-        },
-      });
-
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-      console.log('Response data:', response.data);
-
-      const data: SensorData = response.data;
-      return data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error('Axios error details:', {
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          data: error.response?.data,
-          headers: error.response?.headers,
-        });
-        const message = error.response?.data || error.message;
-        throw new Error(`Failed to fetch sensor data: ${message}`);
-      }
-      console.error('Error fetching sensor data:', error);
-      throw new Error('Failed to fetch sensor data. Check server connection.');
-    }
+    const response = await axios.get(`${API_URL}/raw`, {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'curl/7.68.0',
+      },
+    });
+    return response.data;
   };
 
-  const { 
-    data: currentData, 
-    isLoading, 
-    error, 
-    refetch 
-  } = useQuery({
+  const { data: currentData, isLoading, error, refetch } = useQuery({
     queryKey: ['sensorData'],
     queryFn: fetchSensorData,
     refetchInterval: POLLING_INTERVAL,
     retry: 3,
-    onSuccess: (data) => {
-      setHistoricalData(prev => {
-        const newData = [...prev, data];
-        return newData.slice(-20);
-      });
-    },
-    onError: (error) => {
-      toast.error('Failed to fetch sensor data', {
-        description: error instanceof Error ? error.message : 'Unknown error',
-      });
-    },
   });
+
+  // Ensure historicalData updates correctly when currentData changes
+  useEffect(() => {
+    if (currentData) {
+      setHistoricalData((prevData) => {
+        const newData = [...prevData, currentData];
+        return newData.slice(-20); // Keep the latest 20 records
+      });
+    }
+  }, [currentData]);
 
   const refreshData = useCallback(() => {
     refetch();
   }, [refetch]);
+
+  // Error handling with toast
+  useEffect(() => {
+    if (error) {
+      toast.error('Failed to fetch sensor data', {
+        description: error.message,
+      });
+    }
+  }, [error]);
 
   return {
     isLoading,
